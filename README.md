@@ -5,7 +5,7 @@
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
-![Demo Screenshot](https://https://github.com/iNardex/paginated-component/images/example.png)
+![Demo Screenshot](https://github.com/iNardex/paginated-component/images/example.png)
 
 Documentation
 -------------
