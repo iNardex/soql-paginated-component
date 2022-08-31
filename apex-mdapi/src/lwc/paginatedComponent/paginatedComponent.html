@@ -1,0 +1,66 @@
+<!--
+ - Created by wnardo on 2/16/2022.
+ -->
+
+<!-- Paginated Component -->
+<template>
+	<article class="slds-card">
+		<div class="slds-page-header">
+			<div class="slds-page-header__row">
+				<div class="slds-page-header__col-title">
+					<div class="slds-media">
+						<div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
+                              <lightning-icon icon-name={cardIcon} alternative-text="Icon" title="Icon"></lightning-icon>
+                              <span class="slds-assistive-text">{titleText}</span>
+                            </span>
+						</div>
+						<div class="slds-media__body">
+							<div class="slds-page-header__name">
+								<div class="slds-page-header__name-title">
+									<h1>
+										<span class="slds-page-header__title slds-truncate" title={titleText}>{titleText}</span>
+									</h1>
+								</div>
+							</div>
+							<p class="slds-page-header__name-meta">{countRow} items</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<template if:false={isEmpty}>
+			<div class="slds-grid slds-gutters">
+				<div class="slds-col slds-size_1-of-1 ">
+					<div class="data-div">
+						<template if:true={isLoading}>
+							<div class="spinner-div">
+								<lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+							</div>
+						</template>
+						<lightning-datatable
+							key-field="Id"
+							data={tableData}
+							columns={columns}
+							onrowaction={handleRowAction}
+							hide-checkbox-column="true">
+						</lightning-datatable>
+					</div>
+					<div class="slds-grid slds-gutters slds-p-left_medium slds-p-right_medium" style="margin-top: 10px;">
+						<div class="slds-col slds-size_1-of-2 slds-float_left">
+							<lightning-button disabled={disablePrevButton} data-id="prevPage" variant="base"
+							                  class="slds-button "
+							                  label="Back" onclick={handlePrev}></lightning-button>
+						</div>
+						<div class="slds-col slds-size_1-of-2 slds-float_right">
+							<lightning-button disabled={disableNextButton} data-id="nextPage" variant="base"
+							                  label="Next"
+							                  class="slds-button slds-button-right"
+							                  onclick={handleNext}></lightning-button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+	</article>
+</template>

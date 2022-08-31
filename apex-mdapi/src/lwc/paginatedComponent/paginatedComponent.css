@@ -1,0 +1,26 @@
+/**
+ * Created by wnardo on 8/2/2022.
+ */
+
+.borderBox {
+    border-color: rgb(201, 201, 201);
+    border-style: solid;
+    border-radius: var(--lwc-borderRadiusMedium);
+    border-width: var(--lwc-borderWidthThin);
+    padding: 0.7% 1%;
+}
+
+.spinner-div {
+    position: absolute;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+}
+
+.data-div {
+    position: relative;
+}
+
+.slds-button-right {
+    float:right;
+}
