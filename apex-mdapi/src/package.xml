@@ -3,6 +3,7 @@
     <types>
         <members>PaginatedDAO</members>
         <members>PaginatedController</members>
+        <members>TEST_PaginatedController</members>
         <name>ApexClass</name>
     </types>
     <types>
