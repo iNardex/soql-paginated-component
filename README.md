@@ -1,0 +1,1 @@
+# paginated-component
