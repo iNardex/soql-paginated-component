@@ -9,5 +9,5 @@
         <members>manageSO</members>
         <name>LightningComponentBundle</name>
     </types>
-    <version>42.0</version>
+    <version>54.0</version>
 </Package>
