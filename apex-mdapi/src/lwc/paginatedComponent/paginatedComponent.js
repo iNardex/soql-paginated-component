@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import retrievePaginatedResult from '@salesforce/apex/PaginatedController.retrievePaginatedResult';
 import getUser from '@salesforce/apex/PaginatedController.getUser';
 import getAccount from '@salesforce/apex/PaginatedController.getAccount';
@@ -8,22 +8,31 @@ import { NavigationMixin } from 'lightning/navigation';
 import {ShowToastEvent} from 'lightning/platformShowToastEvent';
 
 const ISO_DATE_REGEXP = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$/;
+
 const ACTIONS =  { label: 'Delete', name: 'delete' };
+const DOWNLOAD = { label: 'Download', name: 'download' };
+
+const URL_DOWNLOAD = '/sfc/servlet.shepherd/version/download/';
 
 const RECORD_STR = "{recordId}";
 const USER_ID = "{userId}";
 
 export default class PaginatedComponent extends NavigationMixin(LightningElement) {
 
+    @api recordId;
     @api title;
     @api objectName;
     @api fields;
     @api row;
     @api deleteEnabled;
+    @api downloadEnabled;
     @api cardIcon;
     @api nameAsLink;
     @api whereCondition;
-    @api recordId;
+    @api orderBy;
+
+    @track sortBy;
+    @track sortDirection;
 
     fieldsDefinition = [];
 
@@ -34,8 +43,10 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     tableData = [];
 
     columns = [];
-    page = 1;
+    currentPage = 1;
+    pagesToView = 5;
     countRow = 0;
+    pagination = [];
 
     connectedCallback(){
         this.init();
@@ -44,9 +55,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
 
     async init(){
         this.currentUser = await getUser();
-        console.log('user: ' + JSON.stringify(this.currentUser));
         this.currentAccount = await getAccount({accountId: this.currentUser.AccountId});
-        console.log('account: ' + JSON.stringify(this.currentAccount));
         this.retrieveData();
     }
 
@@ -57,8 +66,12 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             const def = {
                 label: this.optimizeName(f, labelMap),
                 fieldName: f,
+                type: labelMap[f.toLowerCase()].type,
+                sortable: labelMap[f.toLowerCase()].isSortable,
                 hideDefaultActions: true
             }
+
+            //console.log('def: ' + JSON.stringify(def));
 
             if(this.nameAsLink && f.toUpperCase().endsWith('NAME')){
                def.fieldName = f.toUpperCase() === 'NAME' ? 'URL' : f.toUpperCase().replace('.NAME', '.URL');
@@ -81,6 +94,9 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             actions.typeAttributes.rowActions.push(ACTIONS);
         }
 
+        if(this.downloadEnabled){
+            actions.typeAttributes.rowActions.push(DOWNLOAD);
+        }
 
         if (actions.typeAttributes.rowActions.length > 0) {
             this.columns.push(actions);
@@ -88,21 +104,22 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     }
 
     optimizeName(name, labelMap) {
-        return labelMap[name.toLowerCase()] ?? name.replace('__c', '').replace('__r.', ' ');
+        return labelMap[name.toLowerCase()].label ?? name.replace('__c', '').replace('__r.', ' ');
     }
 
     parseWhereCondition(){
-        return (this.whereCondition ?? '')
-        .replace(RECORD_STR, this.recordId)
-        .replace(USER_ID, this.currentUser.Id);
+        let whereCond = this.whereCondition.replace(RECORD_STR, this.recordId);
+        return whereCond;
     }
 
     retrieveData(){
         this.isLoading = true;
         const criteria = {
             resultNum: this.row,
-            pageNum: this.page,
-            whereCondition: this.parseWhereCondition()
+            pageNum: this.currentPage,
+            whereCondition: this.parseWhereCondition(),
+            orderBy: this.orderBy,
+            inputSearch: this.inputSearch
         };
 
         retrievePaginatedResult({objectName: this.objectName, fields: this.fieldsDefinition, criteriaJson: JSON.stringify(criteria) })
@@ -113,41 +130,77 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
            this.isLoading = false;
         });
     }
-    
+
     async manageRetrieveData(result){
         let data = [...result.data];
         data = this.flatExternalObj(data);
         for(let row of data){
             let idsProp = Object.getOwnPropertyNames(row).filter(prop => prop.toUpperCase().endsWith('ID'));
             for(let prop of idsProp){
-                 let objectName = this.objectName;
-                 if(prop.indexOf('__r' ) !== -1 ){
+
+                let objectName = this.objectName;
+
+                if(prop.indexOf('__r' ) !== -1 ){
                      objectName = prop.toUpperCase().replace('.ID', '').replace('__R', '__C');
-                 }
-                 const result = await this[NavigationMixin.GenerateUrl]({
-                     type: "standard__recordPage",
-                     attributes: {
-                         recordId: row[prop],
-                         objectApiName: objectName,
-                         actionName: "view"
-                     }
+                }
+
+                const result = await this[NavigationMixin.GenerateUrl]({
+                type: "standard__recordPage",
+                attributes: {
+                    recordId: row[prop],
+                    objectApiName: objectName,
+                    actionName: "view"
+                }
                  });
-        
-                 const key = prop.toUpperCase() === 'ID' ? 'URL' : prop.toUpperCase().replace('.ID', '.URL');
-                 row[key] = result;
+
+                const key = prop.toUpperCase() === 'ID' ? 'URL' : prop.toUpperCase().replace('.ID', '.URL');
+                row[key] = result;
             }
 
-             Object.getOwnPropertyNames(row)
-             .filter(prop => ISO_DATE_REGEXP.test(row[prop]))
-             .forEach(prop => {
-				row[prop] = new Date(Date.parse(row[prop])).toLocaleString();
-             });
+            Object.getOwnPropertyNames(row)
+                .filter(prop => ISO_DATE_REGEXP.test(row[prop]))
+                .forEach(prop => {
+                    row[prop] = new Date(Date.parse(row[prop])).toLocaleString();
+                });
         }
-        
+
         this.tableData = [...data];
         this.isEmpty = result.resultNum === 0;
-        this.countRow = result.resultNum
+        this.countRow = result.resultNum;
+
+        let numberOfPages = Math.floor(this.countRow / this.row) + (this.countRow % this.row === 0 ? 0 : 1);
+
+        this.pagination = this.getPagingRange(Number(this.currentPage), numberOfPages)
+            .map(el => {
+                return {
+                    pageNum: el,
+                    disabled: this.currentPage == el
+                }
+            });
+
         this.isLoading = false;
+    }
+
+    /**
+     * Return an integer range within [min, min + total) of given length centered
+     * around the current page number.
+     */
+    getPagingRange(current, total) {
+        let min = 1;
+        let length = 5;
+        if (length > total) length = total;
+
+        let start = current - Math.floor(length / 2);
+        start = Math.max(start, min);
+        start = Math.min(start, min + total - length);
+
+        return Array.from({length: length}, (el, i) => start + i);
+    }
+
+    changeInputSearch(event) {
+        this.currentPage = 1;
+        this.inputSearch = event.currentTarget.value;
+        this.retrieveData();
     }
 
     flatExternalObj(data){
@@ -170,12 +223,17 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     }
 
     handlePrev(event) {
-        this.page--;
+        this.currentPage--;
         this.retrieveData();
     }
 
     handleNext(event) {
-        this.page++;
+        this.currentPage++;
+        this.retrieveData();
+    }
+
+    handleByPage(event) {
+        this.currentPage = event.currentTarget.dataset.id;
         this.retrieveData();
     }
 
@@ -186,8 +244,20 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             case 'delete':
                 this.deleteRow(row);
                 break;
+            case 'download':
+                this.downloadDoc(row);
+                break;
             default:
         }
+    }
+
+    downloadDoc(row){
+        this[NavigationMixin.Navigate]({
+            type: 'standard__webPage',
+            attributes: {
+                url: window.location.origin + '/' + URL_DOWNLOAD + row.Id
+            },
+        });
     }
 
     deleteRow(row){
@@ -208,14 +278,22 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
         });
     }
 
+    handleSortData(event) {
+        this.sortBy = event.detail.fieldName;
+        this.sortDirection = event.detail.sortDirection;
+        console.log('fieldToSort ' + this.sortBy);
+        this.orderBy = this.sortBy.replace('URL', 'NAME') + ' ' + this.sortDirection;
+        this.retrieveData();
+    }
+
     get disablePrevButton() {
-       return this.page === 1;
+       return this.currentPage === 1;
     }
 
     get disableNextButton(){
        if(!this.countRow || this.countRow === 0)
             return true;
-       return this.page * Number(this.row) >= this.countRow;
+       return this.currentPage * Number(this.row) >= this.countRow;
     }
 
     get titleText(){

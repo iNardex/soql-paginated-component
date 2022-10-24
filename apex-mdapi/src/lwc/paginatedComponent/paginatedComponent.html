@@ -6,28 +6,43 @@
 <template>
 	<article class="slds-card">
 		<div class="slds-page-header">
-			<div class="slds-page-header__row">
-				<div class="slds-page-header__col-title">
-					<div class="slds-media">
-						<div class="slds-media__figure">
-                            <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
-                              <lightning-icon icon-name={cardIcon} alternative-text="Icon" title="Icon"></lightning-icon>
-                              <span class="slds-assistive-text">{titleText}</span>
-                            </span>
-						</div>
-						<div class="slds-media__body">
-							<div class="slds-page-header__name">
-								<div class="slds-page-header__name-title">
-									<h1>
-										<span class="slds-page-header__title slds-truncate" title={titleText}>{titleText}</span>
-									</h1>
+			<div class="slds-grid slds-gutters">
+				<div class="slds-col slds-size_8-of-12 ">
+
+					<div class="slds-page-header__row">
+						<div class="slds-page-header__col-title">
+							<div class="slds-media">
+								<div class="slds-media__figure">
+                                    <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
+                                      <lightning-icon icon-name={cardIcon} alternative-text="Icon" title="Icon"></lightning-icon>
+                                      <span class="slds-assistive-text">{titleText}</span>
+                                    </span>
+								</div>
+								<div class="slds-media__body">
+									<div class="slds-page-header__name">
+										<div class="slds-page-header__name-title">
+											<h1>
+												<span class="slds-page-header__title slds-truncate" title={titleText}>{titleText}</span>
+											</h1>
+										</div>
+									</div>
+									<p class="slds-page-header__name-meta">{countRow} items</p>
 								</div>
 							</div>
-							<p class="slds-page-header__name-meta">{countRow} items</p>
 						</div>
 					</div>
+
+				</div>
+				<div class="slds-col slds-size_4-of-12 ">
+					<lightning-input
+							name="enter-search"
+							label="Search"
+							type="search"
+							onchange={changeInputSearch}
+					></lightning-input>
 				</div>
 			</div>
+
 		</div>
 		<template if:false={isEmpty}>
 			<div class="slds-grid slds-gutters">
@@ -39,25 +54,36 @@
 							</div>
 						</template>
 						<lightning-datatable
-							key-field="Id"
-							data={tableData}
-							columns={columns}
-							onrowaction={handleRowAction}
-							hide-checkbox-column="true">
+								key-field="Id"
+								data={tableData}
+								columns={columns}
+								onrowaction={handleRowAction}
+								hide-checkbox-column="true"
+								sorted-by={sortBy}
+								sorted-direction={sortDirection}
+								onsort={handleSortData}>
 						</lightning-datatable>
 					</div>
-					<div class="slds-grid slds-gutters slds-p-left_medium slds-p-right_medium" style="margin-top: 10px;">
-						<div class="slds-col slds-size_1-of-2 slds-float_left">
-							<lightning-button disabled={disablePrevButton} data-id="prevPage" variant="base"
-							                  class="slds-button "
-							                  label="Back" onclick={handlePrev}></lightning-button>
+					<div class="slds-grid slds-gutters slds-p-around_medium slds-m-top_medium">
+						<div class="slds-col slds-size_1-of-12 slds-float_left">
+							<lightning-button disabled={disablePrevButton} data-id="prevPage" variant="brand"
+											  label="Back" onclick={handlePrev}></lightning-button>
 						</div>
-						<div class="slds-col slds-size_1-of-2 slds-float_right">
-							<lightning-button disabled={disableNextButton} data-id="nextPage" variant="base"
-							                  label="Next"
-							                  class="slds-button slds-button-right"
-							                  onclick={handleNext}></lightning-button>
+						<div class="slds-col slds-size_10-of-12 slds-align_absolute-center">
+							<template for:each={pagination} for:item="page">
+								<div class="slds-p-horizontal_x-small" key={page.pageNum}>
+									<lightning-button data-id={page.pageNum} disabled={page.disabled} variant="brand"
+													  label={page.pageNum} onclick={handleByPage}></lightning-button>
+								</div>
+							</template>
 						</div>
+						<div class="slds-col slds-size_1-of-12 slds-float_right">
+							<lightning-button disabled={disableNextButton} data-id="nextPage" variant="brand"
+											  label="Next"
+											  class="slds-button-right"
+											  onclick={handleNext}></lightning-button>
+						</div>
+
 					</div>
 				</div>
 			</div>
