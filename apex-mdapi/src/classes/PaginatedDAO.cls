@@ -10,7 +10,7 @@ public abstract class PaginatedDAO {
 
 	public List<SObject> query (Criteria criteria){
 		System.debug('PaginatedDAO::query::criteria ' + JSON.serialize(criteria));
-		if (String.isNotBlank(criteria.inputSearch)) {
+		if (String.isNotBlank(criteria.inputSearch) && criteria.inputSearch.length() > 1) {
 			return soslQuery(criteria);
 		} else {
 			return soqlQuery(criteria);
@@ -28,7 +28,7 @@ public abstract class PaginatedDAO {
 	}
 
 	public List<SObject> soslQuery(Criteria criteria){
-		String query = 'FIND \'' + criteria.inputSearch + '\' IN ALL FIELDS RETURNING '
+		String query = 'FIND \'*' + criteria.inputSearch + '*\' IN ALL FIELDS RETURNING '
 				+ getObjectName() + '(' + String.join(getFields(), ',')
 				+ getWhere(criteria)
 				+ getOrderBy(criteria)
@@ -42,7 +42,7 @@ public abstract class PaginatedDAO {
 
 	public Integer count(Criteria criteria){
 		System.debug('PaginatedDAO::count::criteria ' + JSON.serialize(criteria));
-		if (String.isNotBlank(criteria.inputSearch)) {
+		if (String.isNotBlank(criteria.inputSearch) && criteria.inputSearch.length() > 1) {
 			return countSoslQuery(criteria);
 		} else {
 			return countSoqlQuery(criteria);
@@ -60,7 +60,7 @@ public abstract class PaginatedDAO {
 	}
 
 	public Integer countSoslQuery(Criteria criteria) {
-		String query = 'FIND \'' + criteria.inputSearch + '\' IN ALL FIELDS RETURNING '
+		String query = 'FIND \'*' + criteria.inputSearch + '*\' IN ALL FIELDS RETURNING '
 				+ getObjectName() + '(' + String.join(getFields(), ',') + getWhere(criteria) + ')';
 
 		System.debug('PaginatedDAO::countSoslQuery::' + query);
