@@ -108,6 +108,9 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     }
 
     parseWhereCondition(){
+        if(!this.whereCondition){
+            return undefined;
+        }
         let whereCond = this.whereCondition.replace(RECORD_STR, this.recordId);
         return whereCond;
     }
@@ -274,7 +277,12 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             this.retrieveData();
         })
         .catch(error=>{
-
+            const evt = new ShowToastEvent({
+                title: error?.body?.pageErrors[0]?.message ?? 'Error',
+                variant: 'error',
+            });
+            this.dispatchEvent(evt);
+			this.isLoading = false;
         });
     }
 
