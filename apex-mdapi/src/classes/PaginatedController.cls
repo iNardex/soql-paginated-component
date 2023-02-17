@@ -5,30 +5,54 @@
 
 public with sharing class PaginatedController {
 
+	public static final Map<String, String> mapFieldType = new Map<String, String>{
+			'BOOLEAN' => 'boolean',
+			'CURRENCY' => 'currency',
+			'DATE' => 'date',
+			'DATETIME' => 'date',
+			'EMAIL' => 'email',
+			'DOUBLE' => 'number',
+			'PICKLIST' => 'text',
+			'INTEGER' => 'number',
+			'MULTIPICKLIST' => 'text',
+			'PERCENT' => 'percent',
+			'PHONE' => 'phone',
+			'REFERENCE' => 'text',
+			'STRING' => 'text',
+			'TEXTAREA' => 'text',
+			'URL' => 'url'
+	};
+
 	@AuraEnabled(Cacheable = true)
-	public static Map<String, String> retrieveObjectLabel(String objectName){
+	public static Map<String, ColumnWrapper> retrieveObjectLabel(String objectName){
 
 		Map<String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
-		Schema.SObjectType leadSchema = schemaMap.get(objectName);
-		Map<String, Schema.SObjectField> fieldMap = leadSchema.getDescribe().fields.getMap();
+		Schema.SObjectType objectSchema = schemaMap.get(objectName);
+		Map<String, Schema.SObjectField> fieldMap = objectSchema.getDescribe().fields.getMap();
 
-		Map<String, String> fieldLabelMap = new Map<String, String>();
+		Map<String, ColumnWrapper> columnsWrapper = new Map<String, ColumnWrapper>();
 		for (String fieldName: fieldMap.keySet()) {
-			fieldLabelMap.put(fieldName, fieldMap.get(fieldName).getDescribe().getLabel());
+			ColumnWrapper wrapper = new ColumnWrapper(
+					fieldName,
+					fieldMap.get(fieldName).getDescribe().getLabel(),
+					parseTypeField(fieldMap.get(fieldName).getDescribe().getType().name()),
+					fieldMap.get(fieldName).getDescribe().isSortable()
+			);
+			columnsWrapper.put(fieldName, wrapper);
 		}
 
-		return fieldLabelMap;
+		return columnsWrapper;
 	}
 
 	@AuraEnabled
-	public static GenericWrapper retrievePaginatedResult(String objectName, List<String> fields, String criteriaJson){
+	public static DataWrapper retrievePaginatedResult(String objectName, List<String> fields, String criteriaJson){
 		System.debug('PaginatedController::retrievePaginatedResult::objectName ' + objectName );
 		System.debug('PaginatedController::retrievePaginatedResult::fields ' + JSON.serialize(fields) );
 		System.debug('PaginatedController::retrievePaginatedResult::criteriaJson ' + criteriaJson );
 
 		PaginatedDAO.Criteria criteria = (PaginatedDAO.Criteria) JSON.deserialize(criteriaJson, PaginatedDAO.Criteria.class);
 		final GenericDAO dao = new GenericDAO(objectName, fields);
-		GenericWrapper toRet = new GenericWrapper(dao.query(criteria), dao.countQuery(criteria));
+		DataWrapper toRet = new DataWrapper(dao.query(criteria), dao.count(criteria));
 
 		System.debug('PaginatedController::retrievePaginatedResult::return ' + JSON.serialize(toRet));
 		return toRet;
@@ -53,6 +77,10 @@ public with sharing class PaginatedController {
 		System.debug('PaginatedController::deleteItem::id ' + id );
 		Database.delete(id);
 		System.debug('PaginatedController::deleted::id ' + id );
+	}
+
+	public static String parseTypeField(String type) {
+		return mapFieldType.get(type) != null ? mapFieldType.get(type) : 'string';
 	}
 
 	public class GenericDAO extends PaginatedDAO {
@@ -83,15 +111,30 @@ public with sharing class PaginatedController {
 		}
 	}
 
-	public class GenericWrapper {
+	public class DataWrapper {
 
-		public GenericWrapper(List<SObject> data, Integer resultNum){
+		public DataWrapper(List<SObject> data, Integer resultNum){
 			this.data = data;
 			this.resultNum = resultNum;
 		}
 
 		@AuraEnabled public List<SObject> data;
 		@AuraEnabled public Integer resultNum;
+	}
+
+	public class ColumnWrapper {
+
+		public ColumnWrapper(String apiName, String label, String type, Boolean isSortable){
+			this.apiName = apiName;
+			this.label = label;
+			this.type = type;
+			this.isSortable = isSortable;
+		}
+
+		@AuraEnabled public String apiName;
+		@AuraEnabled public String label;
+		@AuraEnabled public String type;
+		@AuraEnabled public Boolean isSortable;
 	}
 
 }
