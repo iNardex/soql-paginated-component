@@ -1,5 +1,5 @@
 @IsTest
-private class PaginatedControllerTest {
+private class TEST_PaginatedController {
 
 	@IsTest
 	static void testBehavior() {
