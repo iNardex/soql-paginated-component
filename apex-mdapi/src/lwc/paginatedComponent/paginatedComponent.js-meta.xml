@@ -8,6 +8,7 @@
     <targets>
         <target>lightning__RecordPage</target>
         <target>lightning__AppPage</target>
+        <target>lightning__FlowScreen</target>
         <target>lightning__RecordAction</target>
         <target>lightningCommunity__Default</target>
         <target>lightningCommunity__Page</target>
@@ -15,6 +16,18 @@
 
     <targetConfigs>
         <targetConfig targets="lightning__AppPage">
+            <property name="title" label="Title" type="String" required="false"/>
+            <property name="objectName" label="Object API Name" type="String" required="true"/>
+            <property name="fields" label="Object Fields (separated by comma)" type="String" required="true"/>
+            <property name="row" label="Row for page" type="Integer" required="true" default="3"/>
+            <property name="cardIcon" label="Card icon" type="String" required="true" default="standard:employee_asset"/>
+            <property name="deleteEnabled" label="Show delete button" type="Boolean" default="true"/>
+            <property name="downloadEnabled" label="Show download button" type="Boolean" default="false"/>
+            <property name="nameAsLink" label="Click on name redirect to Object page view" type="Boolean" default="true"/>
+            <property name="whereCondition" label="where condition (use {recordId} for the record)" type="String" required="false"/>
+            <property name="orderBy" label="Order By" type="String" required="false"/>
+        </targetConfig>
+        <targetConfig targets="lightning__FlowScreen">
             <property name="title" label="Title" type="String" required="false"/>
             <property name="objectName" label="Object API Name" type="String" required="true"/>
             <property name="fields" label="Object Fields (separated by comma)" type="String" required="true"/>
