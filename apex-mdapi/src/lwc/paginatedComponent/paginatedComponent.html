@@ -33,14 +33,16 @@
 					</div>
 
 				</div>
-				<div class="slds-col slds-size_4-of-12 ">
-					<lightning-input
-							name="enter-search"
-							label="Search"
-							type="search"
-							onchange={changeInputSearch}
-					></lightning-input>
-				</div>
+				<template if:true={searchEnabled}>
+					<div class="slds-col slds-size_4-of-12 ">
+						<lightning-input
+								name="enter-search"
+								label="Search"
+								type="search"
+								onchange={changeInputSearch}
+						></lightning-input>
+					</div>
+				</template>
 			</div>
 
 		</div>

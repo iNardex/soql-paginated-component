@@ -30,6 +30,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     @api nameAsLink;
     @api whereCondition;
     @api orderBy;
+    @api searchEnabled;
 
     @track sortBy;
     @track sortDirection;
@@ -49,8 +50,11 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     pagination = [];
 
     connectedCallback(){
-        this.init();
-        this.generateTableColumns();
+         retrieveObjectLabel({objectName: this.objectName}).
+         then(labelMap => {
+             this.generateTableColumns(labelMap);
+             this.init();
+         });
     }
 
     async init(){
@@ -59,8 +63,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
         this.retrieveData();
     }
 
-    async generateTableColumns(){
-        const labelMap = await retrieveObjectLabel({objectName: this.objectName});
+    generateTableColumns(labelMap){
         this.fieldsDefinition = this.fields.split(',').map(f=>f.trim());
         this.columns = this.fieldsDefinition.map(f=>{
             const def = {
@@ -71,10 +74,9 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
                 hideDefaultActions: true
             }
 
-            //console.log('def: ' + JSON.stringify(def));
-
-            if(this.nameAsLink && f.toUpperCase().endsWith('NAME')){
-               def.fieldName = f.toUpperCase() === 'NAME' ? 'URL' : f.toUpperCase().replace('.NAME', '.URL');
+			const fieldUpper = f.toUpperCase();
+            if(this.nameAsLink && (fieldUpper.endsWith('NAME') || fieldUpper === 'NAME__C'){
+               def.fieldName = fieldUpper === 'NAME' || fieldUpper === 'NAME__C' ? 'URL' : fieldUpper.replace('.NAME', '.URL');
                 def.type = 'url';
                 def.typeAttributes = {
                     label: {

@@ -26,6 +26,7 @@
             <property name="nameAsLink" label="Click on name redirect to Object page view" type="Boolean" default="true"/>
             <property name="whereCondition" label="where condition (use {recordId} for the record)" type="String" required="false"/>
             <property name="orderBy" label="Order By" type="String" required="false"/>
+            <property name="searchEnabled" label="Show Search Bar" type="Boolean" default="false"/>
         </targetConfig>
         <targetConfig targets="lightning__FlowScreen">
             <property name="title" label="Title" type="String" required="false"/>
@@ -38,6 +39,7 @@
             <property name="nameAsLink" label="Click on name redirect to Object page view" type="Boolean" default="true"/>
             <property name="whereCondition" label="where condition (use {recordId} for the record)" type="String" required="false"/>
             <property name="orderBy" label="Order By" type="String" required="false"/>
+            <property name="searchEnabled" label="Show Search Bar" type="Boolean" default="false"/>
         </targetConfig>
         <targetConfig targets="lightning__RecordPage">
             <property name="title" label="Title" type="String" required="false"/>
@@ -50,6 +52,7 @@
             <property name="nameAsLink" label="Click on name redirect to Object page view" type="Boolean" default="true"/>
             <property name="whereCondition" label="where condition (use {recordId} for the record)" type="String" required="false"/>
             <property name="orderBy" label="Order By" type="String" required="false"/>
+            <property name="searchEnabled" label="Show Search Bar" type="Boolean" default="false"/>
         </targetConfig>
         <targetConfig targets="lightningCommunity__Default">
             <property name="title" label="Title" type="String" required="false"/>
@@ -62,6 +65,7 @@
             <property name="nameAsLink" label="Click on name redirect to Object page view" type="Boolean" default="true"/>
             <property name="whereCondition" label="where condition (use {recordId} for the record)" type="String" required="false"/>
             <property name="orderBy" label="Order By" type="String" required="false"/>
+            <property name="searchEnabled" label="Show Search Bar" type="Boolean" default="false"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
