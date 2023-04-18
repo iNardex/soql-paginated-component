@@ -75,7 +75,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             }
 
 			const fieldUpper = f.toUpperCase();
-            if(this.nameAsLink && (fieldUpper.endsWith('NAME') || fieldUpper === 'NAME__C'){
+            if(this.nameAsLink && (fieldUpper.endsWith('NAME') || fieldUpper === 'NAME__C')){
                def.fieldName = fieldUpper === 'NAME' || fieldUpper === 'NAME__C' ? 'URL' : fieldUpper.replace('.NAME', '.URL');
                 def.type = 'url';
                 def.typeAttributes = {
