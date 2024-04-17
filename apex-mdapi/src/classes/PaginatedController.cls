@@ -5,7 +5,7 @@
 
 public without sharing class PaginatedController {
 
-	public static final Map<String, String> mapFieldType = new Map<String, String>{
+	private static final Map<String, String> FIELD_TYPE_MAP = new Map<String, String>{
 			'BOOLEAN' => 'boolean',
 			'CURRENCY' => 'currency',
 			'DATE' => 'date',
@@ -79,8 +79,8 @@ public without sharing class PaginatedController {
 		System.debug('PaginatedController::deleted::id ' + id );
 	}
 
-	public static String parseTypeField(String type) {
-		return mapFieldType.get(type) != null ? mapFieldType.get(type) : 'string';
+	private static String parseTypeField(String type) {
+		return FIELD_TYPE_MAP.get(type) ?? 'string';
 	}
 
 	public class GenericDAO extends PaginatedDAO {

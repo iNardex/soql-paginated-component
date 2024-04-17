@@ -52,14 +52,12 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     pagination = [];
 
     connectedCallback(){
-         retrieveObjectLabel({objectName: this.objectName}).
-         then(labelMap => {
-             this.generateTableColumns(labelMap);
-             this.init();
-         });
+        this.init();
     }
 
     async init(){
+        let labelMap = await retrieveObjectLabel({objectName: this.objectName});
+        this.generateTableColumns(labelMap);
         this.currentUser = await getUser();
         this.currentAccount = await getAccount({accountId: this.currentUser.AccountId});
         this.retrieveData();
@@ -69,7 +67,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
         this.fieldsDefinition = this.fields.split(',').map(f=>f.trim());
         this.columns = this.fieldsDefinition.map(f=>{
             const def = {
-                label: this.optimizeName(f, labelMap),
+                label: this.optimizeName(f, labelMap).replace('.', ' '),
                 fieldName: f,
                 type: labelMap[f.toLowerCase()]?.type ?? 'text',
                 sortable: labelMap[f.toLowerCase()]?.isSortable ?? false,
@@ -262,6 +260,8 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
                 this.downloadDoc(row);
                 break;
             default:
+                console.log('#X#X - NOT IMPLEMENTED - #X#X');
+                break;
         }
     }
 
