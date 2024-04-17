@@ -3,7 +3,7 @@
  * Test: TEST_PaginatedController
  */
 
-public with sharing class PaginatedController {
+public without sharing class PaginatedController {
 
 	public static final Map<String, String> mapFieldType = new Map<String, String>{
 			'BOOLEAN' => 'boolean',
@@ -60,7 +60,7 @@ public with sharing class PaginatedController {
 
 	@AuraEnabled
 	public static User getUser(){
-		return [SELECT Id, AccountId FROM User WHERE Id =: UserInfo.getUserId()];
+		return [SELECT Id, AccountId, ContactId FROM User WHERE Id =: UserInfo.getUserId()];
 	}
 
 	@AuraEnabled
