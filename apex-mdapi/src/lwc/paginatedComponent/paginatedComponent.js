@@ -16,6 +16,8 @@ const URL_DOWNLOAD = '/sfc/servlet.shepherd/version/download/';
 
 const RECORD_STR = "{recordId}";
 const USER_ID = "{userId}";
+const ACCOUNT_ID = "{accountId}";
+const CONTACT_ID = "{contactId}";
 
 export default class PaginatedComponent extends NavigationMixin(LightningElement) {
 
@@ -114,6 +116,13 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             return undefined;
         }
         let whereCond = this.whereCondition.replace(RECORD_STR, this.recordId);
+        if(this.currentUser){
+            whereCond = whereCond.replace(USER_ID, '\'' + this.currentUser.Id + '\'');
+            whereCond = whereCond.replace(CONTACT_ID, '\'' + this.currentUser.ContactId + '\'');
+        }
+        if(this.currentAccount){
+            whereCond = whereCond.replace(ACCOUNT_ID, '\'' + this.currentAccount.Id + '\'');
+        }
         return whereCond;
     }
 
