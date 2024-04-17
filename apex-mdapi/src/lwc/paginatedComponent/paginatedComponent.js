@@ -69,13 +69,13 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
             const def = {
                 label: this.optimizeName(f, labelMap),
                 fieldName: f,
-                type: labelMap[f.toLowerCase()].type,
-                sortable: labelMap[f.toLowerCase()].isSortable,
+                type: labelMap[f.toLowerCase()]?.type ?? 'text',
+                sortable: labelMap[f.toLowerCase()]?.isSortable ?? false,
                 hideDefaultActions: true
             }
 
 			const fieldUpper = f.toUpperCase();
-            if(this.nameAsLink && (fieldUpper.endsWith('NAME') || fieldUpper === 'NAME__C')){
+            if(this.nameAsLink && (fieldUpper != 'STAGENAME' && (fieldUpper.endsWith('NAME') || fieldUpper === 'NAME__C'))){
                def.fieldName = fieldUpper === 'NAME' || fieldUpper === 'NAME__C' ? 'URL' : fieldUpper.replace('.NAME', '.URL');
                 def.type = 'url';
                 def.typeAttributes = {
@@ -106,7 +106,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     }
 
     optimizeName(name, labelMap) {
-        return labelMap[name.toLowerCase()].label ?? name.replace('__c', '').replace('__r.', ' ');
+        return labelMap[name.toLowerCase()]?.label ?? name.replace('__c', '').replace('__r.', ' ');
     }
 
     parseWhereCondition(){
@@ -211,7 +211,7 @@ export default class PaginatedComponent extends NavigationMixin(LightningElement
     flatExternalObj(data){
         return data.map(row => {
             Object.getOwnPropertyNames(row)
-            .filter(prop => prop.indexOf('__r') !== -1)
+            .filter(prop => typeof row[prop] === 'object' )
             .map(prop => {
                 let mapped = {};
                 Object.getOwnPropertyNames(row[prop]).forEach(internalProp => mapped[prop + '.' + internalProp] = row[prop][internalProp]);
